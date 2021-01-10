@@ -1,0 +1,45 @@
+//@version=4
+study("SAR Trend Trader w/ Alerts", shorttitle="SAR Trend Trader", overlay=true)
+
+//Inputs
+UseEMA = input(true, "Use EMA Filter")
+SlowEMALength = input(120, "Slow EMA Length")
+FastEMALength = input(10, "Fast EMA Length")
+start = input(0.01, "SAR Start")
+increment = input(0.005, "SAR Increment")
+maximum = input(0.08, "SAR Max")
+
+
+psar = sar(start, increment, maximum)
+ema = ema(close, SlowEMALength)
+fastema = ema(close, FastEMALength)
+rsi = rsi(close, 14)
+
+// Signals
+long = high[1] < psar[2] and high >= psar[1] and close > ema and fastema > ema and UseEMA or not UseEMA and high[1] < psar[2] and high >= psar[1] or UseEMA and crossover(fastema[2], ema[2]) and fastema > ema and close > psar
+short = low[1] > psar[2] and low <= psar[1] and close < ema and fastema < ema and UseEMA or not UseEMA and low[1] > psar[2] and low <= psar[1] or UseEMA and crossunder(fastema[2], ema[2]) and rsi > 30 and fastema < ema and close < psar
+
+//Plot EMA
+plot(ema, color = color.blue , linewidth=4, transp= UseEMA ? 0 : 100, title="Slow EMA")
+plot(fastema, color= color.purple , linewidth=4, transp= UseEMA ? 0 : 100, title="Fast EMA")
+
+//Plot PSAR
+plot(psar, title="PSAR", color = color.teal , trackprice=true, linewidth=2)
+
+//Barcolor
+//UseEMA
+barcolor(close > psar and close > ema and fastema > ema and UseEMA ? color.green : na, title = "Long w/ EMA")
+barcolor(close > psar and close < ema and UseEMA or close > psar and fastema < ema and UseEMA or close < psar and close > ema and UseEMA or close < psar and fastema > ema ? color.white : na, title = "No Trade")
+barcolor(close < psar and close < ema and fastema < ema and UseEMA ? color.red : na, title = "Short w/ EMA")
+//NoEMA
+barcolor(close > psar and not UseEMA ? color.green : na, title = "Long No EMA")
+barcolor(close < psar and not UseEMA ? color.red : na, title = "Short No EMA")
+    
+//Plots
+plot(cross(fastema, ema) ? fastema : na, style=plot.style_cross, linewidth = 4, color=ema>fastema ? color.red:color.green,transp= UseEMA ? 10 : 100, editable=true)
+plotshape(long,  title = "Long",  text = "Long",  style = shape.labelup,   location = location.belowbar, color = color.green, size=size.tiny, textcolor=color.white, transp=0)
+plotshape(short, title = "Short", text = "Short", style = shape.labeldown, location = location.abovebar, color = color.red, size=size.tiny, textcolor=color.white, transp=0)
+
+// Alerts
+alertcondition(long,  "Long",  "Long")
+alertcondition(short, "Short", "Short")
