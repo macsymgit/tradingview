@@ -1,0 +1,46 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © spdoinkal
+
+//@version=4
+
+study(title="TD 8 + 9", shorttitle="TD 8 + 9", overlay=true, resolution="")
+
+// // TURN TD 8's & 9's ON / OFF ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+showBuyTDs = input(true, title="Show TD Buy")
+showSellTDs = input(true, title="Show TD Sell")
+
+
+// // TD CALCS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+buySignals = 0
+buySignals := (close < close[4]) ? buySignals[1] == 9 ? 1 : buySignals[1] + 1 : 0
+
+sellSignals = 0
+sellSignals := (close > close[4]) ? sellSignals[1] == 9 ? 1 : sellSignals[1] + 1 : 0
+
+BuyOrSell = max(buySignals, sellSignals)
+
+TD8buy = showBuyTDs and buySignals and BuyOrSell == 8
+TD9buy = showBuyTDs and buySignals and BuyOrSell == 9
+
+TD8sell = showSellTDs and sellSignals and BuyOrSell == 8
+TD9sell = showSellTDs and sellSignals and BuyOrSell == 9
+
+// TD LABELS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+plotshape(TD8buy, style=shape.labelup,text="8",color=color.green, textcolor=color.white, size=size.tiny, location=location.belowbar, transp=0)
+plotshape(TD9buy, style=shape.labelup,text="9",color=color.green, textcolor=color.white, size=size.tiny, location=location.belowbar, transp=0)
+plotshape(TD8sell, style=shape.labeldown,text="8",color=color.red, textcolor=color.white, size=size.tiny, location=location.abovebar, transp=0)
+plotshape(TD9sell, style=shape.labeldown,text="9",color=color.red, textcolor=color.white, size=size.tiny, location=location.abovebar, transp=0)
+
+
+// ALERTS /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+alertcondition(TD8buy, "TD 8 Buy", "TD 8 Buy") // Once per bar close
+alertcondition(TD9buy, "TD 9 Buy", "TD 9 Buy") // Once per bar close
+alertcondition(TD8sell, "TD 8 Sell", "TD 8 Sell") // Once per bar close
+alertcondition(TD9sell, "TD 9 Sell", "TD 9 Sell") // Once per bar close
+
+
+
